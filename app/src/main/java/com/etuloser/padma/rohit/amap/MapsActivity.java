@@ -9,11 +9,15 @@ import android.os.Bundle;
 import android.util.Log;
 
 import com.etuloser.padma.rohit.amap.Model.Place;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
@@ -34,7 +38,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     ArrayList<LatLng> markerPoints;
     ArrayList<Place> placeList;
-
+    private UiSettings mUiSettings;
+    LatLngBounds.Builder b   = new LatLngBounds.Builder();;
+    LatLng slat;
+    LatLng dlat;
+    PolylineOptions  pOptions = new PolylineOptions();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,8 +65,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(i<placeList.size()-1) {
                 //placeList.get(i).getLatLng().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 
-                LatLng slat=new LatLng(Double.valueOf(placeList.get(i).getLatitude()),Double.valueOf(placeList.get(i).getLongitude()));
-                LatLng dlat=new LatLng(Double.valueOf(placeList.get(i+1).getLatitude()),Double.valueOf(placeList.get(i+1).getLongitude()));
+                 slat=new LatLng(Double.valueOf(placeList.get(i).getLatitude()),Double.valueOf(placeList.get(i).getLongitude()));
+                 dlat=new LatLng(Double.valueOf(placeList.get(i+1).getLatitude()),Double.valueOf(placeList.get(i+1).getLongitude()));
 
                 String url = getDirectionsUrl(slat,dlat);
 
@@ -69,8 +77,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             }
             else{
 
-                LatLng slat=new LatLng(Double.valueOf(placeList.get(i).getLatitude()),Double.valueOf(placeList.get(i).getLongitude()));
-                LatLng dlat=new LatLng(Double.valueOf(placeList.get(0).getLatitude()),Double.valueOf(placeList.get(0).getLongitude()));
+                 slat=new LatLng(Double.valueOf(placeList.get(i).getLatitude()),Double.valueOf(placeList.get(i).getLongitude()));
+                dlat=new LatLng(Double.valueOf(placeList.get(0).getLatitude()),Double.valueOf(placeList.get(0).getLongitude()));
 
                 String url = getDirectionsUrl(slat, dlat);
 
@@ -98,7 +106,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap=googleMap;
+
+
         if (mMap != null) {
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(slat)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    .title("Source Marker"));
+
+            mMap.addMarker(new MarkerOptions()
+                    .position(dlat)
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+                    .title("Destination Marker"));
+
+            mUiSettings=mMap.getUiSettings();
+            mMap.getUiSettings().setZoomControlsEnabled(true);
+
+          //  pOptions.add(new LatLng(slat.latitude,slat.longitude));
+            b.include(new LatLng(slat.latitude,dlat.longitude));
+            b.include(new LatLng(dlat.latitude,dlat.longitude));
+            LatLngBounds bounds = b.build();
+
+            int width = getResources().getDisplayMetrics().widthPixels;
+            int height=getResources().getDisplayMetrics().heightPixels;
+            CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width,height,250);
+            mMap.animateCamera(cu);
 
 
             if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -242,6 +275,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
 
+
+
                 // Fetching all the points in i-th route
                 for(int j=0;j<path.size();j++){
                     HashMap<String,String> point = path.get(j);
@@ -251,12 +286,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     LatLng position = new LatLng(lat, lng);
 
                     points.add(position);
+
+                    Log.d("Points"+j,String.valueOf(lat)+","+String.valueOf(lng));
                 }
 
                 // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(2);
-                lineOptions.color(Color.RED);
+
+
+                    lineOptions.addAll(points);
+                    lineOptions.width(2);
+                    lineOptions.color(Color.RED);
+
             }
 
             mMap.addPolyline(lineOptions);
