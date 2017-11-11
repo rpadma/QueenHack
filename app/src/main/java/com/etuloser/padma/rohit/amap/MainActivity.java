@@ -1,5 +1,6 @@
 package com.etuloser.padma.rohit.amap;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -14,7 +15,12 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.maps.model.LatLng;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,11 +33,21 @@ public class MainActivity extends AppCompatActivity {
 
     int PLACE_PICKER_REQUEST_SRC = 1;
     int PLACE_PICKER_REQUEST_DES = 2;
+    ArrayList<LatLng> latLngs=new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /*Sample test data*/
+
+        try {
+            latLngs=readFromAssets(this,"textdata.txt");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
         edxdes=(EditText)findViewById(R.id.edxdsc);
         edxsrc=(EditText)findViewById(R.id.edxsrc);
@@ -62,7 +78,12 @@ btnshow.setOnClickListener(new View.OnClickListener() {
         placelist.add(p1);
 
         Intent i=new Intent(MainActivity.this,MapsActivity.class);
-        i.putExtra("Placeobj",placelist);
+
+                  Bundle args = new Bundle();
+                  args.putSerializable("Placeobj",(Serializable)placelist);
+                  args.putSerializable("lllist",(Serializable)latLngs);
+                  i.putExtra("BUNDLE",args);
+
         startActivity(i);
 
         }
@@ -77,6 +98,25 @@ btnshow.setOnClickListener(new View.OnClickListener() {
 
       //  Intent i=new Intent(this,MapsActivity.class);
      //   startActivity(i);
+    }
+
+    public static ArrayList<LatLng> readFromAssets(Context context, String filename) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(context.getAssets().open(filename)));
+
+        ArrayList<LatLng> latLngs=new ArrayList<>();
+        // do reading, usually loop until end of file reading
+        String mLine = reader.readLine();
+        while (mLine != null) {
+
+            double lat= Double.valueOf((mLine.split(","))[0].toString().trim());
+            double log= Double.valueOf((mLine.split(","))[1].toString().trim());
+            LatLng latLng=new LatLng(lat,log);
+            latLngs.add(latLng);
+            mLine = reader.readLine();
+
+        }
+        reader.close();
+        return latLngs;
     }
 
 

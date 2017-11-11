@@ -1,5 +1,6 @@
 package com.etuloser.padma.rohit.amap;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -29,6 +30,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +41,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     ArrayList<LatLng> markerPoints;
     ArrayList<Place> placeList;
     private UiSettings mUiSettings;
+    ArrayList<LatLng> modeldata;
     LatLngBounds.Builder b   = new LatLngBounds.Builder();;
     LatLng slat;
     LatLng dlat;
@@ -55,6 +58,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         {
             placeList=(ArrayList<Place>) getIntent().getExtras().getSerializable("Placeobj");
 
+            Intent intent = getIntent();
+            Bundle args = intent.getBundleExtra("BUNDLE");
+            placeList = (ArrayList<Place>) args.getSerializable("Placeobj");
+            modeldata = (ArrayList<LatLng>) args.getSerializable("lllist");
+
+            Log.d("Master data count:",String.valueOf(modeldata.size()));
         }
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -285,21 +294,43 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
 
-                    points.add(position);
+                    DecimalFormat df = new DecimalFormat("#.##");
+                    double tlat=Double.valueOf(df.format(position.latitude));
+                    double tlog=Double.valueOf(df.format(position.longitude));
+                    LatLng temppos=new LatLng(tlat,tlog);
 
-                    Log.d("Points"+j,String.valueOf(lat)+","+String.valueOf(lng));
+                   // points.add(position);
+
+
+                    if(modeldata.contains(temppos)) {
+                        lineOptions.add(position);
+                        lineOptions.width(4);
+                        lineOptions.color(Color.RED);
+                        Log.d("Points i:"+i+"j:"+j,position.toString());
+
+                    }
+                    else
+                    {
+                        lineOptions.add(position);
+                        lineOptions.width(4);
+                        lineOptions.color(Color.GREEN);
+                    }
+                    Log.d("Points i:"+i+"j:"+j,String.valueOf(lat)+","+String.valueOf(lng));
                 }
 
                 // Adding all the points in the route to LineOptions
 
 
-                    lineOptions.addAll(points);
-                    lineOptions.width(2);
-                    lineOptions.color(Color.RED);
+                  //  lineOptions.addAll(points);
+                   // lineOptions.width(4);
+                   // lineOptions.color(Color.RED);
+
 
             }
 
             mMap.addPolyline(lineOptions);
+
+            
         }
     }
 

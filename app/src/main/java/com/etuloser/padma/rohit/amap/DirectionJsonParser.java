@@ -53,7 +53,7 @@ public class DirectionJsonParser {
                     routes.add(path);
                 }
             }
-
+;
         } catch (JSONException e) {
             e.printStackTrace();
         }catch (Exception e){
