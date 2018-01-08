@@ -8,3 +8,7 @@ Approach:-
 Based on historical accident data in Charlotte.
 Model generation - Clustered geo location points(Latitude, Longitude) using KNN algorithm considering certain threshold.
 Extracted the Route between Source and Destination and modified the parts of route where a lot of accident occurred in past.
+
+![img](Screen1.jpeg)
+![img](Screen2.jpeg)
+![img](Screen3.jpg)
